@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points & Rewards - IG PassChange</title>
+    <link rel="stylesheet" href="point.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">IG PassChange</h1>
+            <div class="user-info">
+                <span class="points-display" id="pointsDisplay">Points: 0</span>
+                <span class="credits-display" id="creditsDisplay">Credits: 0</span>
+                <span class="username" id="username"></span>
+                <button class="btn-logout" onclick="goBack()">Back</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="points-info-card">
+                <h2>Your Points Balance</h2>
+                <div class="points-balance" id="pointsBalance">0</div>
+                <p class="points-description">Earn points with every credit purchase and redeem them for amazing rewards!</p>
+            </div>
+
+            <div class="rewards-grid" id="rewardsGrid">
+                <p class="loading">Loading rewards...</p>
+            </div>
+
+            <div class="points-history-section">
+                <h3>Points History</h3>
+                <div class="points-history-list" id="pointsHistoryList">
+                    <p class="no-history">No points history yet</p>
+                </div>
+            </div>
+
+            <div class="redemption-history-section">
+                <h3>Redemption History</h3>
+                <div class="redemption-history-list" id="redemptionHistoryList">
+                    <p class="no-history">No redemptions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redemption Modal -->
+    <div class="modal" id="redemptionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Redeem Reward</h3>
+                <span class="close" onclick="closeRedemptionModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="reward-details" id="rewardDetails"></div>
+                <div class="redemption-form" id="redemptionForm"></div>
+            </div>
+
+            <button class="btn-confirm-redemption" id="confirmRedemptionBtn" onclick="confirmRedemption()">Redeem Now</button>
+        </div>
+    </div>
+
+    <script src="point.js"></script>
+</body>
+</html>

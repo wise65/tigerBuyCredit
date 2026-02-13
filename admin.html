@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - IG PassChange</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>Admin Panel</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" onclick="showSection('transactions')">
+                    <span class="nav-icon">💳</span>
+                    <span>Transactions</span>
+                </button>
+                <button class="nav-item" onclick="showSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+                <button class="nav-item" onclick="showSection('promos')">
+                    <span class="nav-icon">🎟️</span>
+                    <span>Promo Codes</span>
+                </button>
+                <button class="nav-item" onclick="showSection('points')">
+                    <span class="nav-icon">💎</span>
+                    <span>Points & Rewards</span>
+                </button>
+            </nav>
+
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2 class="section-title">Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon pending">⏳</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="pendingCount">0</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon approved">✓</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="approvedCount">0</div>
+                            <div class="stat-label">Approved</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon declined">✗</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="declinedCount">0</div>
+                            <div class="stat-label">Declined</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon total">₦</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalRevenue">₦0</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-transactions">
+                    <h3>Recent Transactions</h3>
+                    <div id="recentTransactionsList"></div>
+                </div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section id="transactions" class="section">
+                <h2 class="section-title">All Transactions</h2>
+                
+                <div class="filters">
+                    <select id="statusFilter" onchange="filterTransactions()">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="declined">Declined</option>
+                    </select>
+                </div>
+
+                <div class="transactions-table" id="allTransactionsList"></div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <h2 class="section-title">Settings</h2>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Telegram Bot Configuration</h3>
+                        <div class="form-group">
+                            <label>Bot Token</label>
+                            <input type="text" id="botToken" placeholder="Enter bot token" />
+                        </div>
+                        <div class="form-group">
+                            <label>Chat ID</label>
+                            <input type="text" id="chatId" placeholder="Enter chat ID" />
+                        </div>
+                        <button class="btn-save" onclick="saveTelegramSettings()">Save Telegram Settings</button>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>Telegram Webhook Configuration</h3>
+                        <div class="form-group">
+                            <label>Webhook URL</label>
+                            <input type="text" id="webhookUrl" placeholder="https://your-ngrok-url.ngrok.io/telegram-webhook" />
+                            <small>For local testing, use your ngrok URL. Example: https://abc123.ngrok.io/telegram-webhook</small>
+                        </div>
+                        <button class="btn-save" onclick="setupWebhook()">Setup Webhook</button>
+                        <button class="btn-info" onclick="checkWebhook()">Check Webhook Status</button>
+                        <div id="webhookStatus"></div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Pricing Configuration</h3>
+                        <div class="form-group">
+                            <label>Price per Credit (₦)</label>
+                            <input type="number" id="pricePerCredit" step="0.01" placeholder="35.00" />
+                            <small>Default: ₦800 for 20 credits (₦35 per credit)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Maximum Purchase (Credits)</label>
+                            <input type="number" id="maxPurchase" placeholder="Leave empty for unlimited" />
+                        </div>
+                        <button class="btn-save" onclick="savePricingSettings()">Save Pricing</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Account Details</h3>
+                        <div class="form-group">
+                            <label>Bank Name</label>
+                            <input type="text" id="bankName" placeholder="Enter bank name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" id="accountNumber" placeholder="Enter account number" />
+                        </div>
+                        <div class="form-group">
+                            <label>Account Name</label>
+                            <input type="text" id="accountName" placeholder="Enter account name" />
+                        </div>
+                        <button class="btn-save" onclick="saveAccountDetails()">Save Account Details</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Promo Codes Section -->
+            <section id="promos" class="section">
+                <h2 class="section-title">Promo Codes</h2>
+
+                <div class="promo-create">
+                    <h3>Create New Promo Code</h3>
+                    <div class="promo-form">
+                        <div class="form-group">
+                            <label>Promo Code</label>
+                            <input type="text" id="newPromoCode" placeholder="SUMMER2024" />
+                        </div>
+                        <div class="form-group">
+                            <label>Discount (%)</label>
+                            <input type="number" id="newPromoDiscount" min="1" max="100" placeholder="10" />
+                        </div>
+                        <div class="form-group">
+                            <label>Active</label>
+                            <input type="checkbox" id="newPromoActive" checked />
+                        </div>
+                        <button class="btn-create" onclick="createPromo()">Create Promo</button>
+                    </div>
+                </div>
+
+                <div class="promo-list">
+                    <h3>Existing Promo Codes</h3>
+                    <div id="promosList"></div>
+                </div>
+            </section>
+
+            <!-- Points & Rewards Section -->
+            <section id="points" class="section">
+                <h2 class="section-title">Points & Rewards Management</h2>
+                
+                <!-- Points Configuration -->
+                <div class="settings-card points-config-card">
+                    <h3>Points Configuration</h3>
+                    <p>Set how many points users earn per credit purchased</p>
+                    
+                    <div class="threshold-row">
+                        <div class="threshold-title">Threshold 1 (High Purchases - 200+ credits)</div>
+                        <div class="form-group">
+                            <label>Minimum Credits</label>
+                            <input type="number" id="threshold1Credits" placeholder="200" />
+                        </div>
+                        <div class="form-group">
+                            <label>Points Per Credit</label>
+                            <input type="number" id="threshold1Points" step="0.01" placeholder="0.1" />
+                            <small>Example: 0.1 = 20 points for 200 credits</small>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-row">
+                        <div class="threshold-title">Threshold 2 (Standard Purchases - 100+ credits)</div>
+                        <div class="form-group">
+                            <label>Minimum Credits</label>
+                            <input type="number" id="threshold2Credits" placeholder="100" />
+                        </div>
+                        <div class="form-group">
+                            <label>Points Per Credit</label>
+                            <input type="number" id="threshold2Points" step="0.01" placeholder="0.05" />
+                            <small>Example: 0.05 = 5 points for 100 credits</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-save" onclick="savePointsConfig()">Save Points Configuration</button>
+                </div>
+
+                <!-- Create Reward -->
+                <div class="settings-card">
+                    <h3>Create New Reward</h3>
+                    <div class="promo-form">
+                        <div class="form-group">
+                            <label>Reward Name <span style="color: red;">*</span></label>
+                            <input type="text" id="newRewardName" placeholder="25 Free Credits" />
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="newRewardDescription" rows="2" placeholder="Get 25 credits added to your account"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Reward Type <span style="color: red;">*</span></label>
+                            <select id="newRewardType" onchange="updateRewardTypeHelp()">
+                                <option value="credits">Credits - Direct credit bonus</option>
+                                <option value="password_reset">Reset Password Link BOT - IG password service</option>
+                                <option value="referral">Referral Bonus - Friend gets free credits</option>
+                                <option value="cash">Cash Withdrawal - Money to bank</option>
+                                <option value="custom">Custom - Custom reward</option>
+                            </select>
+                            <small id="rewardTypeHelp" style="color: #6b7280; display: block; margin-top: 4px;">User will receive credits directly to their account</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Points Cost <span style="color: red;">*</span></label>
+                            <input type="number" id="newRewardPoints" placeholder="500" />
+                            <small>How many points does this reward cost?</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Reward Value</label>
+                            <input type="number" id="newRewardValue" placeholder="25" />
+                            <small>For credits: number of credits. For cash: amount in naira. For referral: credits for friend.</small>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="newRewardActive" checked />
+                                <span>Active (users can see and redeem)</span>
+                            </label>
+                        </div>
+                        <button class="btn-create" onclick="createReward()">Create Reward</button>
+                    </div>
+                </div>
+
+                <!-- Rewards List -->
+                <div class="settings-card">
+                    <h3>Existing Rewards</h3>
+                    <div id="rewardsList" style="margin-top: 16px;">
+                        <p style="text-align: center; color: #9ca3af; padding: 20px;">Loading rewards...</p>
+                    </div>
+                </div>
+
+                <!-- Redemption Requests -->
+                <div class="settings-card">
+                    <h3>Redemption Requests</h3>
+                    <div id="redemptionsList" style="margin-top: 16px;">
+                        <p style="text-align: center; color: #9ca3af; padding: 20px;">Loading redemptions...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div class="modal" id="transactionModal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Transaction Details</h3>
+                <span class="close" onclick="closeTransactionModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="transactionDetails"></div>
+            <div class="modal-actions">
+                <button class="btn-approve" onclick="approveTransaction()">Approve</button>
+                <button class="btn-decline" onclick="declineTransaction()">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redemption Detail Modal -->
+    <div class="modal" id="redemptionModal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Redemption Details</h3>
+                <span class="close" onclick="closeRedemptionAdminModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="redemptionModalDetails"></div>
+            <div class="modal-actions">
+                <button class="btn-approve" onclick="approveRedemption()">Approve</button>
+                <button class="btn-decline" onclick="declineRedemption()">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-menu.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-points.js"></script>
+</body>
+</html>

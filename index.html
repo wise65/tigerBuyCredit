@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Purchase - IG PassChange</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">IG PassChange</h1>
+            <div class="user-info">
+                <span class="points-display" id="pointsDisplay">Points: 0</span>
+                <span class="credits-display" id="creditsDisplay">Credits: 0</span>
+                <span class="username" id="username"></span>
+                <button class="btn-points" onclick="goToPoints()">💎 Points</button>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="purchase-card">
+                <h2>Purchase Credits</h2>
+                
+                <div class="credit-input-section">
+                    <label for="creditAmount">Number of Credits</label>
+                    <input type="number" id="creditAmount" min="100" placeholder="Enter amount (min 100)" />
+                    <div class="credit-info">
+                        <span>Minimum: 100 credits</span>
+                        <span id="maxInfo"></span>
+                    </div>
+                </div>
+
+                <div class="price-display">
+                    <div class="price-label">Total Price</div>
+                    <div class="price-amount" id="totalPrice">₦0.00</div>
+                    <div class="price-breakdown" id="priceBreakdown"></div>
+                </div>
+
+                <div class="promo-section">
+                    <label for="promoCode">Promo Code (Optional)</label>
+                    <div class="promo-input-group">
+                        <input type="text" id="promoCode" placeholder="Enter promo code" />
+                        <button class="btn-apply-promo" onclick="applyPromo()">Apply</button>
+                    </div>
+                    <div class="promo-message" id="promoMessage"></div>
+                </div>
+
+                <button class="btn-purchase" onclick="initiatePurchase()">Purchase Credits</button>
+            </div>
+
+            <div class="transactions-section">
+                <h3>Your Transactions</h3>
+                <div class="transactions-list" id="transactionsList">
+                    <p class="no-transactions">No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complete Payment</h3>
+                <span class="close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            
+            <div class="account-details">
+                <h4>Transfer to:</h4>
+                <div class="detail-row">
+                    <span class="detail-label">Bank:</span>
+                    <span class="detail-value" id="bankName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Number:</span>
+                    <span class="detail-value copyable" id="accountNumber" onclick="copyToClipboard(this)">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Name:</span>
+                    <span class="detail-value" id="accountName">-</span>
+                </div>
+                <div class="detail-row amount-row">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="paymentAmount">₦0.00</span>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <label for="receiptUpload" class="upload-label">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span id="uploadText">Upload Payment Receipt</span>
+                </label>
+                <input type="file" id="receiptUpload" accept="image/*" onchange="handleReceiptUpload(event)" />
+            </div>
+
+            <div class="note-section">
+                <label for="paymentNote">Additional Note (Optional)</label>
+                <textarea id="paymentNote" rows="3" placeholder="Add any additional information..."></textarea>
+            </div>
+
+            <button class="btn-confirm-payment" onclick="confirmPayment()">I Have Sent Money</button>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
