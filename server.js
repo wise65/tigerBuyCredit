@@ -133,7 +133,8 @@ function calculatePointsEarned(credits, config) {
 }
 
 // Telegram Bot Helper
-async function sendTelegramNotification(message, transactionId = null, receiptBase64 = null) {
+
+async function sendTelegramNotification(message, transactionId = null, receiptBase64 = null, isRedemption = false) {
   try {
     const config = await configCol.findOne({});
     if (!config || !config.botToken || !config.chatId) {
@@ -141,14 +142,26 @@ async function sendTelegramNotification(message, transactionId = null, receiptBa
       return;
     }
 
+    console.log('📤 Sending notification - isRedemption:', isRedemption, 'ID:', transactionId); // DEBUG
+
     const keyboard = transactionId ? {
       inline_keyboard: [
         [
-          { text: '✅ Approve', callback_data: `approve_${transactionId}` },
-          { text: '❌ Decline', callback_data: `decline_${transactionId}` }
+          { 
+            text: '✅ Approve', 
+            callback_data: isRedemption ? `redeem_approve_${transactionId}` : `approve_${transactionId}` 
+          },
+          { 
+            text: '❌ Decline', 
+            callback_data: isRedemption ? `redeem_decline_${transactionId}` : `decline_${transactionId}` 
+          }
         ]
       ]
     } : undefined;
+
+    if (keyboard) {
+      console.log('🔘 Callback data being sent:', keyboard.inline_keyboard[0][0].callback_data); // DEBUG
+    }
 
     if (receiptBase64) {
       const base64Data = receiptBase64.split(',')[1];
@@ -191,13 +204,20 @@ app.post('/telegram-webhook', async (req, res) => {
       const messageId = callback_query.message.message_id;
       const chatId = callback_query.message.chat.id;
       
-      const [action, id] = data.split('_');
       const config = await configCol.findOne({});
       
-      // Check if it's a redemption or transaction
+      console.log('📌 Callback data received:', data); // DEBUG
+      
+      // CHECK REDEMPTION PATTERN FIRST
       if (data.startsWith('redeem_approve_') || data.startsWith('redeem_decline_')) {
-        const redemptionId = id;
+        console.log('✅ Processing REDEMPTION request');
+        
+        const redemptionId = data.startsWith('redeem_approve_') 
+          ? data.substring('redeem_approve_'.length)
+          : data.substring('redeem_decline_'.length);
         const redeemAction = data.startsWith('redeem_approve_') ? 'approve' : 'decline';
+        
+        console.log('Redemption ID:', redemptionId, '| Action:', redeemAction);
         
         if (redeemAction === 'approve') {
           await approveRedemptionById(redemptionId);
@@ -242,8 +262,15 @@ app.post('/telegram-webhook', async (req, res) => {
           text: `Redemption ${redeemAction}d successfully`
         });
       } else {
-        // Regular transaction handling
-        const transactionId = id;
+        // REGULAR TRANSACTION HANDLING
+        console.log('✅ Processing TRANSACTION request');
+        
+        // Split only on first underscore to preserve ID format
+        const firstUnderscoreIndex = data.indexOf('_');
+        const action = data.substring(0, firstUnderscoreIndex);
+        const transactionId = data.substring(firstUnderscoreIndex + 1);
+        
+        console.log('Action:', action, '| Transaction ID:', transactionId);
         
         if (action === 'approve') {
           await approveTransactionById(transactionId);
@@ -764,7 +791,7 @@ app.post('/api/points/redeem', authMiddleware, async (req, res) => {
     message += `\n🆔 Redemption ID: ${result.insertedId}`;
     message += `\n\n⏳ Status: PENDING`;
 
-    await sendTelegramNotification(message, `redeem_${result.insertedId.toString()}`);
+    await sendTelegramNotification(message, result.insertedId.toString(), null, true);
 
     res.json({ 
       success: true, 
